@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DataRoots - Application</title>
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Bricolage+Grotesque:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+  <body>
+    <div class="page-container">
+      <header class="main-header">
+        <div class="logo-container">
+          <a href="index.html" class="logo-text" id="logo-text">DataRoots</a>
+        </div>
+        <nav class="main-nav">
+          <a href="#upload" class="nav-item" data-tab="upload">Upload Data</a>
+          <a href="#my-data" class="nav-item" data-tab="my-data">My Data</a>
+          <a href="#browse" class="nav-item" data-tab="browse">Browse Data</a>
+          <a href="#requests" class="nav-item" data-tab="requests">Requests</a>
+        </nav>
+        <div class="account-info hidden" id="account-info">
+          <div class="account-details">
+            <span id="account-address">0x0000...0000</span>
+            <span class="balance-container">
+              <span id="account-balance">0.00</span>
+              <span>ETH</span>
+            </span>
+          </div>
+        </div>
+        <button class="connect-wallet-btn" id="connect-wallet">Connect Wallet</button>
+        <button class="disconnect-wallet-btn hidden" id="disconnect-wallet">Disconnect</button>
+      </header>
+
+      <main class="main-content">
+        <div id="notification" class="notification hidden">
+          <p id="notification-text"></p>
+          <button id="close-notification">×</button>
+        </div>
+
+        <div class="tabs-container">
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="upload">
+              <span class="tab-icon upload-icon"></span>
+              <span class="tab-text">Upload Data</span>
+            </button>
+            <button class="tab-btn" data-tab="my-data">
+              <span class="tab-icon my-data-icon"></span>
+              <span class="tab-text">My Data</span>
+            </button>
+            <button class="tab-btn" data-tab="browse">
+              <span class="tab-icon browse-icon"></span>
+              <span class="tab-text">Browse Data</span>
+            </button>
+            <button class="tab-btn" data-tab="requests">
+              <span class="tab-icon requests-icon"></span>
+              <span class="tab-text">Requests</span>
+            </button>
+          </div>
+
+          <div class="tab-content active" id="upload">
+            <div class="section-header">
+              <h2 class="section-title">Upload Your Data</h2>
+              <p class="section-subtitle">Share your data securely on the blockchain</p>
+            </div>
+            <form id="upload-form" class="upload-form">
+              <div class="form-group">
+                <label for="data-name">Data Name</label>
+                <input type="text" id="data-name" required placeholder="Enter a name for your data">
+              </div>
+              <div class="form-group">
+                <label for="data-description">Description</label>
+                <textarea id="data-description" required placeholder="Describe your data"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="file-upload">Data File</label>
+                <div class="file-upload-container">
+                  <input type="file" id="file-upload" required>
+                  <div class="file-upload-preview">
+                    <span class="upload-icon"></span>
+                    <span class="upload-text">Drag & drop or click to upload</span>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="data-category">Category</label>
+                <select id="data-category" required>
+                  <option value="0">Personal</option>
+                  <option value="1">Educational</option>
+                </select>
+              </div>
+              <input type="hidden" id="ipfs-hash">
+              <button type="submit" class="submit-btn">
+                <span>Upload to Blockchain</span>
+                <div class="btn-glow"></div>
+              </button>
+            </form>
+          </div>
+
+          <div class="tab-content" id="my-data">
+            <div class="section-header">
+              <h2 class="section-title">My Data Assets</h2>
+              <p class="section-subtitle">Manage your uploaded and accessible data</p>
+            </div>
+            <div id="user-data-list" class="data-list">
+              <p class="empty-message">Connect your wallet to view your data</p>
+            </div>
+          </div>
+
+          <div class="tab-content" id="browse">
+            <div class="section-header">
+              <h2 class="section-title">Data Marketplace</h2>
+              <p class="section-subtitle">Discover and access data from other users</p>
+            </div>
+            <div id="all-data-list" class="data-list">
+              <p class="empty-message">Connect your wallet to browse data</p>
+            </div>
+          </div>
+
+          <div class="tab-content" id="requests">
+            <div class="section-header">
+              <h2 class="section-title">Access Requests</h2>
+              <p class="section-subtitle">Manage incoming and outgoing data access requests</p>
+            </div>
+            <div class="requests-container">
+              <div class="request-list">
+                <h3>Incoming Requests</h3>
+                <div id="incoming-requests">
+                  <p class="empty-message">No incoming requests</p>
+                </div>
+              </div>
+              <div class="request-list">
+                <h3>Outgoing Requests</h3>
+                <div id="outgoing-requests">
+                  <p class="empty-message">No outgoing requests</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Modal -->
+      <div id="modal" class="modal hidden">
+        <div class="modal-content">
+          <span class="close-modal">&times;</span>
+          <h2 id="modal-title">Request Access</h2>
+          <div id="modal-body">
+            <form id="request-access-form">
+              <input type="hidden" id="data-id">
+              <div class="form-group">
+                <label for="access-duration">Access Duration (days)</label>
+                <input type="number" id="access-duration" min="1" max="365" value="30">
+              </div>
+              <p class="price-info">Price: <span class="price-value">0.01 ETH</span></p>
+              <button type="submit" class="request-btn">
+                <span>Request Access</span>
+                <div class="btn-glow"></div>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <script src="app.js"></script>
+    <script src="animations.js"></script>
+    <script src="navigation.js"></script>
+    <script src="cursor-effects.js"></script>
+    <script>
+        // Initialize animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize wallet connection
+            const connectWalletBtn = document.getElementById('connect-wallet');
+            if (connectWalletBtn) {
+                connectWalletBtn.addEventListener('click', async () => {
+                    try {
+                        await connectWallet();
+                    } catch (error) {
+                        console.error('Failed to connect wallet:', error);
+                        showNotification('Failed to connect wallet. Please try again.', 'error');
+                    }
+                });
+            }
+
+            // Initialize file upload preview
+            const fileInput = document.getElementById('file-upload');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    const fileName = e.target.files[0]?.name;
+                    if (fileName) {
+                        document.querySelector('.file-upload-label').textContent = fileName;
+                    }
+                });
+            }
+        });
+    </script>
+  </body>
+</html> 
